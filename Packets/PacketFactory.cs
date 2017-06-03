@@ -6,8 +6,6 @@ using System.Reflection;
 using Aragas.Network.Attributes;
 using Aragas.Network.IO;
 
-using PCLExt.AppDomain;
-
 namespace Aragas.Network.Packets
 {
     public class PacketFactory<TPacketType, TIDType, TSerializer, TDeserializer> where TPacketType : Packet<TIDType, TSerializer, TDeserializer> where TSerializer : PacketSerializer where TDeserializer : PacketDeserialiser
@@ -54,13 +52,12 @@ namespace Aragas.Network.Packets
         {
             if (packetEnumType != null)
             {
-                foreach (var keyValuePair in CreateIDList(packetEnumType, new[] {AppDomain.GetAssembly(typeof(TPacketType))}))
-                    if (!Packets.ContainsKey(keyValuePair.Key))
-                        Packets.Add(keyValuePair.Key, keyValuePair.Value);
+                foreach (var keyValuePair in CreateIDList(packetEnumType, new[] { typeof(TPacketType).GetTypeInfo().Assembly }))
+                    Packets.Add(keyValuePair.Key, keyValuePair.Value);
             }
 
-            foreach (var keyValuePair in CreateIDListByAttribute(new[] { AppDomain.GetAssembly(typeof(TPacketType)) }))
-                if(!Packets.ContainsKey(keyValuePair.Key))
+            foreach (var keyValuePair in CreateIDListByAttribute(new[] { typeof(TPacketType).GetTypeInfo().Assembly }))
+                if (!Packets.ContainsKey(keyValuePair.Key))
                     Packets.Add(keyValuePair.Key, keyValuePair.Value);
         }
 
