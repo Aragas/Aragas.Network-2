@@ -1,32 +1,52 @@
 using System;
 using System.IO;
+using System.Net;
 
 using Aragas.Network.Data;
 using Aragas.Network.Packets;
-
-using PCLExt.Network;
 
 namespace Aragas.Network.IO
 {
     public class SocketPacketTransmission<TPacketType, TPacketIDType, TSerializer, TDeserializer> : PacketTransmission<TPacketType, TPacketIDType, TSerializer, TDeserializer> where TPacketType : Packet<TPacketIDType, TSerializer, TDeserializer> where TSerializer : PacketSerializer, new() where TDeserializer : PacketDeserialiser, new()
     {
-        public override bool IsConnected => Socket.IsConnected;
-
-        protected ISocketClient Socket { get; }
         protected Stream SocketStream { get; }
 
         protected byte[] Buffer;
 
+#if !(NETSTANDARD2_0 || NET45)
+        protected PCLExt.Network.ISocketClient Socket { get; }
 
-        protected SocketPacketTransmission(ISocketClient socket, Type packetEnumType = null) : base(packetEnumType)
+        public override string Host => Socket.RemoteEndPoint.IP;
+        public override ushort Port => Socket.RemoteEndPoint.Port;
+        public override bool IsConnected => Socket?.IsConnected == true;
+
+        protected SocketPacketTransmission(PCLExt.Network.ISocketClient socket, Stream socketStream = null, BasePacketFactory<TPacketType, TPacketIDType, TSerializer, TDeserializer> factory = null) : base(factory)
         {
             Socket = socket;
-            SocketStream = new SocketClientStream(Socket);
+            SocketStream = socketStream ?? new SocketClientStream(Socket);
         }
-
-
+    
         public override void Connect(string ip, ushort port) { base.Connect(ip, port); Socket.Connect(ip, port); }
         public override void Disconnect() { Socket.Disconnect(); }
+#else
+        protected System.Net.Sockets.Socket Socket { get; }
+
+        public override string Host => (Socket.RemoteEndPoint as IPEndPoint)?.Address.ToString() ?? string.Empty;
+        public override ushort Port => (ushort) ((Socket.RemoteEndPoint as IPEndPoint)?.Port ?? 0);
+        public override bool IsConnected => Socket?.Connected == true;
+
+        protected SocketPacketTransmission(System.Net.Sockets.Socket socket, Stream socketStream = null, BasePacketFactory<TPacketType, TPacketIDType, TSerializer, TDeserializer> factory = null) : base(factory)
+        {
+            Socket = socket;
+            SocketStream = socketStream ?? new SocketClientStream(Socket);
+        }
+
+        public override void Connect(string ip, ushort port) { base.Connect(ip, port); Socket.Connect(ip, port); }
+        public override void Disconnect() { Socket.Disconnect(false); }
+#endif
+
+
+
 
         protected virtual void Send(byte[] buffer)
         {
@@ -60,6 +80,7 @@ namespace Aragas.Network.IO
             {
                 serializer.Write(packet.ID);
                 packet.Serialize(serializer);
+                Buffer = serializer.GetBuffer();
             }
 
             Purge();
@@ -67,7 +88,12 @@ namespace Aragas.Network.IO
 
         public override TPacketType ReadPacket()
         {
+#if !(NETSTANDARD2_0 || NET45)
             if (Socket.DataAvailable > 0)
+#else
+            if (Socket.Available > 0)
+#endif
+
             {
                 var dataLength = ReadPacketLength();
                 if (dataLength != 0)

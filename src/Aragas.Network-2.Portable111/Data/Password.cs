@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Text;
 
-using Org.BouncyCastle.Crypto.Digests;
-
 namespace Aragas.Network.Data
 {
     /// <summary>
@@ -66,10 +64,16 @@ namespace Aragas.Network.Data
 
             var pswBytes = Encoding.UTF8.GetBytes(Password);
 
-            var sha512 = new Sha512Digest();
+#if !(NETSTANDARD2_0 || NET45)
+            var sha512 = new Org.BouncyCastle.Crypto.Digests.Sha512Digest();
             var hashedPassword = new byte[sha512.GetDigestSize()];
             sha512.BlockUpdate(pswBytes, 0, pswBytes.Length);
             sha512.DoFinal(hashedPassword, 0);
+#else
+            var sha512 = System.Security.Cryptography.SHA512.Create();
+            var hashedPassword = sha512.ComputeHash(pswBytes);
+            sha512.Dispose();
+#endif
 
             Hash = BitConverter.ToString(hashedPassword).Replace("-", "").ToLower();
             Password = string.Empty;

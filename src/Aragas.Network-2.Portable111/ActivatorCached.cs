@@ -1,5 +1,5 @@
 using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -13,7 +13,7 @@ namespace Aragas.Network
     {
         private delegate object ObjectActivator(params object[] args);
 
-        private static readonly IDictionary<Type, ObjectActivator> Cache = new Dictionary<Type, ObjectActivator>();
+        private static readonly ConcurrentDictionary<Type, ObjectActivator> Cache = new ConcurrentDictionary<Type, ObjectActivator>();
 
 
         /// <summary>
@@ -21,10 +21,24 @@ namespace Aragas.Network
         /// <para/>
         /// First <see cref="Type"/> creation is slow.
         /// </summary>
+        public static object CreateInstance(Type input)
+        {
+            if (Cache.TryGetValue(input, out var objectActivator))
+                return objectActivator();
+
+            var constructors = input.GetTypeInfo().DeclaredConstructors;
+            var constructor = constructors.First();
+
+            var newex = Expression.New(constructor);
+            var lambda = Expression.Lambda(typeof(ObjectActivator), newex, Expression.Parameter(typeof(object[]), "args"));
+            var result = (ObjectActivator) lambda.Compile();
+            Cache.TryAdd(input, result);
+            return result();
+        }
+
         public static object CreateInstance(Type input, params object[] args)
         {
-            ObjectActivator objectActivator;
-            if (Cache.TryGetValue(input, out objectActivator))
+            if (Cache.TryGetValue(input, out var objectActivator))
                 return objectActivator(args);
 
             var types = args.Select(p => p.GetType());
@@ -36,7 +50,7 @@ namespace Aragas.Network
 
             var paraminfo = constructor.GetParameters();
 
-            var paramex = Expression.Parameter(typeof (object[]), "args");
+            var paramex = Expression.Parameter(typeof(object[]), "args");
 
             var argex = new Expression[paraminfo.Length];
             for (var i = 0; i < paraminfo.Length; i++)
@@ -49,9 +63,9 @@ namespace Aragas.Network
             }
 
             var newex = Expression.New(constructor, argex);
-            var lambda = Expression.Lambda(typeof (ObjectActivator), newex, paramex);
-            var result = (ObjectActivator) lambda.Compile();
-            Cache.Add(input, result);
+            var lambda = Expression.Lambda(typeof(ObjectActivator), newex, paramex);
+            var result = (ObjectActivator)lambda.Compile();
+            Cache.TryAdd(input, result);
             return result(args);
         }
 

@@ -24,8 +24,7 @@ namespace Aragas.Network.IO
 
         protected static void ExtendWriteExecute<T>(PacketSerializer stream, T value, bool writeDefaultLength = true)
         {
-            Action<PacketSerializer, object, bool> action;
-            if (WriteExtendedList.TryGetValue(typeof(T).GetHashCode(), out action))
+            if (WriteExtendedList.TryGetValue(typeof(T).GetHashCode(), out var action))
                 action.Invoke(stream, value, writeDefaultLength);
         }
 

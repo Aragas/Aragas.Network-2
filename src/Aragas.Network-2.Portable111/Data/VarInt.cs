@@ -54,19 +54,21 @@ namespace Aragas.Network.Data
         }
 
 
-        public static explicit operator VarInt(short value) => new VarInt(value);
-        public static explicit operator VarInt(int value) => new VarInt(value);
+        public static implicit operator VarInt(short value) => new VarInt(value);
+        public static implicit operator VarInt(int value) => new VarInt(value);
 
         public static implicit operator short(VarInt value) => (short) value._value;
         public static implicit operator int(VarInt value) => value._value;
         public static implicit operator long(VarInt value) => value._value;
-        public static implicit operator VarInt(Enum value) => new VarInt(Convert.ToInt32(value));
+        //public static implicit operator VarInt(Enum value) => new VarInt(Convert.ToInt32(value));
 
 
         public static bool operator !=(VarInt a, VarInt b) => !a.Equals(b);
         public static bool operator ==(VarInt a, VarInt b) => a.Equals(b);
 
-        public bool Equals(VarInt value) => value._value.Equals(_value);
+        public bool Equals(VarInt value) => _value.Equals(value._value);
+        public bool Equals(int other) => _value.Equals(other);
+
         public override bool Equals(object obj)
         {
             if (obj == null)
@@ -78,5 +80,8 @@ namespace Aragas.Network.Data
             return Equals((VarInt) obj);
         }
         public override int GetHashCode() => _value.GetHashCode();
+
+        public bool Equals(object x, object y) => false;
+        public int GetHashCode(object obj) => obj.GetHashCode();
     }
 }

@@ -31,8 +31,7 @@ namespace Aragas.Network.IO
         protected static T ExtendReadExecute<T>(PacketDeserialiser reader, int length = 0) => ExtendReadContains<T>() ? (T)ReadExtendedList[typeof(T).GetHashCode()](reader, length) : default(T);
         protected static bool ExtendReadTryExecute<T>(PacketDeserialiser reader, int length, out T value)
         {
-            Func<PacketDeserialiser, int, object> func;
-            var exist = ReadExtendedList.TryGetValue(typeof(T).GetHashCode(), out func);
+            var exist = ReadExtendedList.TryGetValue(typeof(T).GetHashCode(), out var func);
             value = exist ? (T)func.Invoke(reader, length) : default(T);
 
             return exist;

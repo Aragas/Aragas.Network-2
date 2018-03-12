@@ -1,8 +1,6 @@
 using System;
 using System.IO;
 
-using PCLExt.Network;
-
 namespace Aragas.Network.IO
 { 
     public class SocketClientStream : Stream
@@ -13,14 +11,21 @@ namespace Aragas.Network.IO
         public override long Length { get; }
         public override long Position { get; set; }
 
-        private readonly ISocketClient _client;
+#if !(NETSTANDARD2_0 || NET45)
+        private readonly PCLExt.Network.ISocketClient _client;
 
-
-        public SocketClientStream(ISocketClient client) { _client = client; }
-
+        public SocketClientStream(PCLExt.Network.ISocketClient client) { _client = client; }
 
         public override void Write(byte[] buffer, int offset, int count) { _client.Write(buffer, offset, count); }
         public override int Read(byte[] buffer, int offset, int count) { return _client.Read(buffer, offset, count); }
+#else
+        private readonly System.Net.Sockets.Socket _client;
+        
+        public SocketClientStream(System.Net.Sockets.Socket client) { _client = client; }  
+        
+        public override void Write(byte[] buffer, int offset, int count) { _client.Send(buffer, offset, count, System.Net.Sockets.SocketFlags.None); }
+        public override int Read(byte[] buffer, int offset, int count) { return _client.Receive(buffer, offset, count, System.Net.Sockets.SocketFlags.None); }
+#endif
 
         public override void Flush() { throw new NotImplementedException(); }
         public override long Seek(long offset, SeekOrigin origin) { throw new NotImplementedException(); }
