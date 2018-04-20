@@ -18,11 +18,11 @@ namespace Aragas.Network.Packets
         public abstract void Dispose();
     }
 
-    public class PacketEnumFactory<TPacketType, TIDType, TSerializer, TDeserializer> : BasePacketFactory<TPacketType, TIDType, TSerializer, TDeserializer> 
-        where TPacketType : Packet<TIDType, TSerializer, TDeserializer> where TIDType : Enum where TSerializer : PacketSerializer where TDeserializer : PacketDeserializer
+    public class PacketEnumFactory<TPacketType, TEnum, TNumberType, TSerializer, TDeserializer> : BasePacketFactory<TPacketType, TNumberType, TSerializer, TDeserializer> 
+        where TPacketType : PacketWithEnum<TEnum, TNumberType, TSerializer, TDeserializer> where TEnum : Enum where TSerializer : PacketSerializer where TDeserializer : PacketDeserializer
     {
-        private static Dictionary<Type, TIDType> IDTypeFromPacketType { get; } = new Dictionary<Type, TIDType>();
-        private static Dictionary<TIDType, Func<TPacketType>> Packets { get; } = new Dictionary<TIDType, Func<TPacketType>>();
+        private static Dictionary<Type, TNumberType> IDTypeFromPacketType { get; } = new Dictionary<Type, TNumberType>();
+        private static Dictionary<TNumberType, Func<TPacketType>> Packets { get; } = new Dictionary<TNumberType, Func<TPacketType>>();
         private static bool IsInizialized { get; set; }
 
         public PacketEnumFactory()
@@ -51,7 +51,7 @@ namespace Aragas.Network.Packets
             }
         }
 
-        public override TPacketType Create(TIDType packetID) => Packets.TryGetValue(packetID, out var packetConstructor) ? packetConstructor() : null;
+        public override TPacketType Create(TNumberType packetID) => Packets.TryGetValue(packetID, out var packetConstructor) ? packetConstructor() : null;
         public override TPacketTypeCustom Create<TPacketTypeCustom>() => Packets.TryGetValue(IDTypeFromPacketType[typeof(TPacketTypeCustom)], out var packetConstructor) ? (TPacketTypeCustom) packetConstructor() : null;
         public override TPacketTypeCustom Create<TPacketTypeCustom>(Func<TPacketTypeCustom> initializer) => initializer();
 
@@ -59,7 +59,7 @@ namespace Aragas.Network.Packets
     }
 
     public class PacketAttributeFactory<TPacketType, TIDType, TSerializer, TDeserializer> : BasePacketFactory<TPacketType, TIDType, TSerializer, TDeserializer>
-    where TPacketType : Packet<TIDType, TSerializer, TDeserializer> where TIDType : struct where TSerializer : PacketSerializer where TDeserializer : PacketDeserializer
+        where TPacketType : PacketWithAttribute<TIDType, TSerializer, TDeserializer> where TIDType : struct where TSerializer : PacketSerializer where TDeserializer : PacketDeserializer
     {
         private static Dictionary<Type, TIDType> IDTypeFromPacketType { get; } = new Dictionary<Type, TIDType>();
         private static Dictionary<TIDType, Func<TPacketType>> Packets { get; } = new Dictionary<TIDType, Func<TPacketType>>();
@@ -84,7 +84,7 @@ namespace Aragas.Network.Packets
                         var packetTypesWithAttribute = packetTypes.Where(type => type.IsDefined(typeof(PacketAttribute), false));
                         foreach (var typeInfo in packetTypesWithAttribute)
                         {
-                            var p = ActivatorCached.CreateInstance(typeInfo.AsType()) as PacketAttribute<TIDType, TSerializer, TDeserializer>;
+                            var p = ActivatorCached.CreateInstance(typeInfo.AsType()) as PacketWithAttribute<TIDType, TSerializer, TDeserializer>;
                             Packets.Add(p.ID, () => (TPacketType)ActivatorCached.CreateInstance(typeInfo.AsType()));
                             IDTypeFromPacketType.Add(p.GetType(), p.ID);
                         }

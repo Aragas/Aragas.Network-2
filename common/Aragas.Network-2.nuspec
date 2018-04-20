@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
     <metadata>
         <id>Aragas.Network-2</id>
-        <version>2.1.0.0</version>
+        <version>2.2.0.0</version>
         <title>Aragas.Network-2</title>
         <authors>Aragas</authors>
         <owners>Aragas</owners>
