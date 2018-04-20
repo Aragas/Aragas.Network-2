@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26430.14
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aragas.Network-2.Portable", "src\Aragas.Network-2.Portable111\Aragas.Network-2.Portable111.csproj", "{1C850450-F2EC-4D79-957C-C3228EACA78A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aragas.Network-2.Portable111", "src\Aragas.Network-2.Portable111\Aragas.Network-2.Portable111.csproj", "{1C850450-F2EC-4D79-957C-C3228EACA78A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aragas.Network-2.Core", "src\Aragas.Network-2.Core\Aragas.Network-2.Core.csproj", "{8788387F-D514-41B3-A002-FB33E62A44B1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Aragas.Network-2.Core", "src\Aragas.Network-2.Core\Aragas.Network-2.Core.csproj", "{8788387F-D514-41B3-A002-FB33E62A44B1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -24,5 +24,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {95D72AE9-0DF5-49A9-B264-1E076E1B116F}
 	EndGlobalSection
 EndGlobal

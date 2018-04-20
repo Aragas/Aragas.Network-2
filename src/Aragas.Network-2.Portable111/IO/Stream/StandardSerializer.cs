@@ -3,7 +3,7 @@ using System.Text;
 
 namespace Aragas.Network.IO
 {
-    public class StandardSerializer : PacketSerializer
+    public class StandardSerializer : StreamSerializer
     {
         private Encoding Encoding { get; } = Encoding.UTF8;
         protected byte[] _buffer;

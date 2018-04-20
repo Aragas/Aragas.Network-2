@@ -6,10 +6,7 @@
     <PackageRequireLicenseAcceptance>False</PackageRequireLicenseAcceptance>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <AssemblyName>Aragas.Network</AssemblyName>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <DocumentationFile>bin\Release\netstandard1.3\Aragas.Network.xml</DocumentationFile>
+    <LangVersion>7.3</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -25,39 +22,40 @@
     <Compile Include="..\Aragas.Network-2.Portable111\Data\VarZInt.cs" Link="Data\VarZInt.cs" />
     <Compile Include="..\Aragas.Network-2.Portable111\Data\VarZLong.cs" Link="Data\VarZLong.cs" />
     <Compile Include="..\Aragas.Network-2.Portable111\Data\VarZShort.cs" Link="Data\VarZShort.cs" />
-    <Compile Include="..\Aragas.Network-2.Portable111\Data\Vector2.cs" Link="Data\Vector2.cs" />
-    <Compile Include="..\Aragas.Network-2.Portable111\Data\Vector3.cs" Link="Data\Vector3.cs" />
-    <Compile Include="..\Aragas.Network-2.Portable111\Extensions\EnumExtensions.cs" Link="Extensions\EnumExtensions.cs" />
     <Compile Include="..\Aragas.Network-2.Portable111\Extensions\PacketExtensions.cs" Link="Extensions\PacketExtensions.cs" />
-    <Compile Include="..\Aragas.Network-2.Portable111\Extensions\StreamExtensions.cs" Link="Extensions\StreamExtensions.cs" />
-    <Compile Include="..\Aragas.Network-2.Portable111\IO\PacketDeserialiser.cs" Link="IO\PacketDeserialiser.cs" />
+    <Compile Include="..\Aragas.Network-2.Portable111\IO\PacketDeserializer.cs" Link="IO\PacketDeserializer.cs" />
     <Compile Include="..\Aragas.Network-2.Portable111\IO\PacketSerializer.cs" Link="IO\PacketSerializer.cs" />
     <Compile Include="..\Aragas.Network-2.Portable111\IO\PacketTransmission.cs" Link="IO\PacketTransmission.cs" />
-    <Compile Include="..\Aragas.Network-2.Portable111\IO\ProtobufDeserialiser.cs" Link="IO\ProtobufDeserialiser.cs" />
-    <Compile Include="..\Aragas.Network-2.Portable111\IO\ProtobufSerializer.cs" Link="IO\ProtobufSerializer.cs" />
-    <Compile Include="..\Aragas.Network-2.Portable111\IO\ProtobufTransmission.cs" Link="IO\ProtobufTransmission.cs" />
-    <Compile Include="..\Aragas.Network-2.Portable111\IO\SocketClientStream.cs" Link="IO\SocketClientStream.cs" />
-    <Compile Include="..\Aragas.Network-2.Portable111\IO\SocketPacketTransmission.cs" Link="IO\SocketPacketTransmission.cs" />
-    <Compile Include="..\Aragas.Network-2.Portable111\IO\StandardDeserialiser.cs" Link="IO\StandardDeserialiser.cs" />
-    <Compile Include="..\Aragas.Network-2.Portable111\IO\StandardSerializer.cs" Link="IO\StandardSerializer.cs" />
-    <Compile Include="..\Aragas.Network-2.Portable111\IO\StandardTransmission.cs" Link="IO\StandardTransmission.cs" />
+    <Compile Include="..\Aragas.Network-2.Portable111\IO\Stream\ProtobufDeserialiser.cs" Link="IO\Stream\ProtobufDeserialiser.cs" />
+    <Compile Include="..\Aragas.Network-2.Portable111\IO\Stream\ProtobufSerializer.cs" Link="IO\Stream\ProtobufSerializer.cs" />
+    <Compile Include="..\Aragas.Network-2.Portable111\IO\Stream\ProtobufTransmission.cs" Link="IO\Stream\ProtobufTransmission.cs" />
+    <Compile Include="..\Aragas.Network-2.Portable111\IO\Stream\SocketClientStream.cs" Link="IO\Stream\SocketClientStream.cs" />
+    <Compile Include="..\Aragas.Network-2.Portable111\IO\Stream\SocketPacketTransmission.cs" Link="IO\Stream\SocketPacketTransmission.cs" />
+    <Compile Include="..\Aragas.Network-2.Portable111\IO\Stream\StandardDeserialiser.cs" Link="IO\Stream\StandardDeserialiser.cs" />
+    <Compile Include="..\Aragas.Network-2.Portable111\IO\Stream\StandardSerializer.cs" Link="IO\Stream\StandardSerializer.cs" />
+    <Compile Include="..\Aragas.Network-2.Portable111\IO\Stream\StandardTransmission.cs" Link="IO\Stream\StandardTransmission.cs" />
+    <Compile Include="..\Aragas.Network-2.Portable111\IO\Stream\StreamDeserializer.cs" Link="IO\Stream\StreamDeserializer.cs" />
+    <Compile Include="..\Aragas.Network-2.Portable111\IO\Stream\StreamSerializer.cs" Link="IO\Stream\StreamSerializer.cs" />
     <Compile Include="..\Aragas.Network-2.Portable111\Packets\Packet.cs" Link="Packets\Packet.cs" />
     <Compile Include="..\Aragas.Network-2.Portable111\Packets\PacketFactory.cs" Link="Packets\PacketFactory.cs" />
     <Compile Include="..\Aragas.Network-2.Portable111\Packets\PacketWithAttribute.cs" Link="Packets\PacketWithAttribute.cs" />
-    <Compile Include="..\Aragas.Network-2.Portable111\Packets\PacketWithEnumName.cs" Link="Packets\PacketWithEnumName.cs" />
-    <Compile Include="..\Aragas.Network-2.Portable111\Packets\PacketWithIntegerType.cs" Link="Packets\PacketWithIntegerType.cs" />
+    <Compile Include="..\Aragas.Network-2.Portable111\Packets\PacketWithEnum.cs" Link="Packets\PacketWithEnum.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Attributes\" />
     <Folder Include="Data\" />
     <Folder Include="Extensions\" />
-    <Folder Include="IO\" />
+    <Folder Include="IO\Stream\" />
     <Folder Include="Packets\" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Portable.BouncyCastle" Version="1.8.1.4" />
+  <ItemGroup Condition="'$(TargetFramework)' == 'net45'">
+    <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+    <PackageReference Include="Microsoft.CSharp" Version="4.4.1" />
   </ItemGroup>
 
 </Project>

@@ -10,7 +10,7 @@ namespace Aragas.Network.IO
     /// Data reader that uses variants for length decoding.
     /// </summary>
     /// <exception cref="NotImplementedException"></exception>
-    public sealed class ProtobufDeserialiser : PacketDeserialiser
+    public sealed class ProtobufDeserialiser : StreamDeserializer
     {
         private Encoding Encoding { get; } = Encoding.UTF8;
 

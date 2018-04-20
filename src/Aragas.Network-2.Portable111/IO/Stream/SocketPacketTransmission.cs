@@ -7,7 +7,8 @@ using Aragas.Network.Packets;
 
 namespace Aragas.Network.IO
 {
-    public class SocketPacketTransmission<TPacketType, TPacketIDType, TSerializer, TDeserializer> : PacketTransmission<TPacketType, TPacketIDType, TSerializer, TDeserializer> where TPacketType : Packet<TPacketIDType, TSerializer, TDeserializer> where TSerializer : PacketSerializer, new() where TDeserializer : PacketDeserialiser, new()
+    public class SocketPacketTransmission<TPacketType, TPacketIDType, TSerializer, TDeserializer> : PacketTransmission<TPacketType, TPacketIDType, TSerializer, TDeserializer> 
+        where TPacketType : Packet<TPacketIDType, TSerializer, TDeserializer>         where TSerializer : StreamSerializer, new() where TDeserializer : StreamDeserializer, new()
     {
         protected Stream SocketStream { get; }
 
@@ -99,7 +100,7 @@ namespace Aragas.Network.IO
                 if (dataLength != 0)
                 {
                     var data = Receive(dataLength);
-                    using (var reader = PacketDeserialiser.Create<TDeserializer>(data))
+                    using (var reader = StreamDeserializer.Create<TDeserializer>(data))
                     {
                         var id = reader.Read<TPacketIDType>();
                         var packet = Factory.Create(id);

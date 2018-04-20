@@ -8,7 +8,7 @@ namespace Aragas.Network.IO
     /// <summary>
     /// Stream that uses variant for length encoding.
     /// </summary>
-    public class ProtobufSerializer : PacketSerializer
+    public class ProtobufSerializer : StreamSerializer
     {
         private Encoding Encoding { get; } = Encoding.UTF8;
         protected byte[] _buffer;

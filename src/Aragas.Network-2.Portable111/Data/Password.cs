@@ -22,7 +22,7 @@ namespace Aragas.Network.Data
                 
                 return _hash;
             }
-            private set { _hash = value; }
+            private set => _hash = value;
         }
         private string _hash = string.Empty;
 

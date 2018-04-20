@@ -10,13 +10,14 @@ namespace Aragas.Network.Data
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct VarShort : IEquatable<VarShort>
     {
-        public int Size => Variant.VariantSize((ushort) _value);
+        public int Size => Variant.VariantSize(_value);
 
 
-        private readonly short _value;
+        private readonly ushort _value;
 
 
-        public VarShort(short value) { _value = value; }
+        public VarShort(ushort value) { _value = value; }
+        public VarShort(short value) { _value = (ushort) value; }
 
 
         public byte[] Encode() => Encode(this);
@@ -24,9 +25,9 @@ namespace Aragas.Network.Data
 
         public override string ToString() => _value.ToString();
 
-        public static VarShort Parse(string str) => new VarShort(short.Parse(str));
+        public static VarShort Parse(string str) => new VarShort(ushort.Parse(str));
 
-        public static byte[] Encode(VarShort value) => Variant.Encode((ushort) value._value);
+        public static byte[] Encode(VarShort value) => Variant.Encode(value._value);
         public static int Encode(VarShort value, byte[] buffer, int offset)
         {
             var encoded = value.Encode();
@@ -40,8 +41,8 @@ namespace Aragas.Network.Data
             return encoded.Length;
         }
 
-        public static VarShort Decode(byte[] buffer, int offset) => new VarShort((short) Variant.Decode(buffer, offset));
-        public static VarShort Decode(Stream stream) => new VarShort((short) Variant.Decode(stream));
+        public static VarShort Decode(byte[] buffer, int offset) => new VarShort((ushort) Variant.Decode(buffer, offset));
+        public static VarShort Decode(Stream stream) => new VarShort((ushort) Variant.Decode(stream));
         public static int Decode(byte[] buffer, int offset, out VarShort result)
         {
             result = Decode(buffer, offset);
@@ -54,12 +55,12 @@ namespace Aragas.Network.Data
         }
 
 
-        public static explicit operator VarShort(short value) => new VarShort(value);
+        public static explicit operator VarShort(ushort value) => new VarShort(value);
 
-        public static implicit operator short(VarShort value) => value._value;
-        public static implicit operator int(VarShort value) => value._value;
-        public static implicit operator long(VarShort value) => value._value;
-        public static implicit operator VarShort(Enum value) => new VarShort(Convert.ToInt16(value));
+        public static implicit operator ushort(VarShort value) => value._value;
+        public static implicit operator uint(VarShort value) => value._value;
+        public static implicit operator ulong(VarShort value) => value._value;
+        public static implicit operator VarShort(Enum value) => new VarShort(Convert.ToUInt16(value));
 
 
         public static bool operator !=(VarShort a, VarShort b) => !a.Equals(b);

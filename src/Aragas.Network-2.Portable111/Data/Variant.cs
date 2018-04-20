@@ -2,9 +2,19 @@
 
 namespace Aragas.Network.Data
 {
-    internal abstract class Variant
+    internal static class Variant
     {
-        protected internal static int VariantSize(ulong value)
+        internal static int VariantSize(ulong value)
+        {
+            var outputSize = 0;
+            while (value > 127)
+            {
+                outputSize++;
+                value >>= 7;
+            }
+            return ++outputSize;
+        }
+        internal static int VariantSize(long value)
         {
             var outputSize = 0;
             while (value > 127)
@@ -15,7 +25,7 @@ namespace Aragas.Network.Data
             return ++outputSize;
         }
 
-        protected internal static byte[] Encode(ulong value)
+        internal static byte[] Encode(ulong value)
         {
             var size = VariantSize(value);
             var array = new byte[size];
@@ -30,7 +40,7 @@ namespace Aragas.Network.Data
             return array;
         }
 
-        protected internal static ulong Decode(byte[] buffer, int offset)
+        internal static ulong Decode(byte[] buffer, int offset)
         {
             ulong decodedValue = 0;
             int index = 0, shiftAmount = 0;
@@ -44,7 +54,7 @@ namespace Aragas.Network.Data
 
             return decodedValue;
         }
-        protected internal static ulong Decode(Stream stream)
+        internal static ulong Decode(Stream stream)
         {
             ulong decodedValue = 0;
             int shiftAmount = 0;
@@ -59,8 +69,8 @@ namespace Aragas.Network.Data
             return decodedValue;
         }
 
-        protected internal static long ZigZagEncode(long value) => (value << 1) ^ (value >> 63);
-        protected internal static long ZigZagDecode(long value)
+        internal static long ZigZagEncode(long value) => (value << 1) ^ (value >> 63);
+        internal static long ZigZagDecode(long value)
         {
             var temp = (((value << 63) >> 63) ^ value) >> 1;
             return temp ^ (value & (1L << 63));

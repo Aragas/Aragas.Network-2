@@ -7,7 +7,7 @@ namespace Aragas.Network.IO
     /// <summary>
     /// Data reader that uses int for length decoding.
     /// </summary>
-    public class StandardDeserialiser : PacketDeserialiser
+    public class StandardDeserialiser : StreamDeserializer
     {
         private Encoding Encoding { get; } = Encoding.UTF8;
 

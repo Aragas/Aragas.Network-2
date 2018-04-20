@@ -10,7 +10,7 @@ namespace Aragas.Network.Data
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct VarZShort : IEquatable<VarZShort>
     {
-        public int Size => Variant.VariantSize((ushort) Variant.ZigZagEncode(_value));
+        public int Size => Variant.VariantSize(Variant.ZigZagEncode(_value));
 
 
         private readonly short _value;

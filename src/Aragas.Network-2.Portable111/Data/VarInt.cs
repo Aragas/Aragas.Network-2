@@ -10,13 +10,14 @@ namespace Aragas.Network.Data
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct VarInt : IEquatable<VarInt>
     {
-        public int Size => Variant.VariantSize((uint) _value);
+        public int Size => Variant.VariantSize(_value);
 
 
-        private readonly int _value;
+        private readonly uint _value;
 
 
-        public VarInt(int value) { _value = value; }
+        public VarInt(uint value) { _value = value; }
+        public VarInt(int value) { _value = (uint) value; }
 
 
         public byte[] Encode() => Encode(this);
@@ -24,9 +25,9 @@ namespace Aragas.Network.Data
 
         public override string ToString() => _value.ToString();
 
-        public static VarInt Parse(string str) => new VarInt(int.Parse(str));
+        public static VarInt Parse(string str) => new VarInt(uint.Parse(str));
         
-        public static byte[] Encode(VarInt value) => Variant.Encode((uint) value._value);
+        public static byte[] Encode(VarInt value) => Variant.Encode(value._value);
         public static int Encode(VarInt value, byte[] buffer, int offset)
         {
             var encoded = value.Encode();
@@ -40,8 +41,8 @@ namespace Aragas.Network.Data
             return encoded.Length;
         }
 
-        public static VarInt Decode(byte[] buffer, int offset) => new VarInt((int) Variant.Decode(buffer, offset));
-        public static VarInt Decode(Stream stream) => new VarInt((int) Variant.Decode(stream));
+        public static VarInt Decode(byte[] buffer, int offset) => new VarInt((uint) Variant.Decode(buffer, offset));
+        public static VarInt Decode(Stream stream) => new VarInt((uint) Variant.Decode(stream));
         public static int Decode(byte[] buffer, int offset, out VarInt result)
         {
             result = Decode(buffer, offset);
@@ -54,21 +55,19 @@ namespace Aragas.Network.Data
         }
 
 
-        public static implicit operator VarInt(short value) => new VarInt(value);
-        public static implicit operator VarInt(int value) => new VarInt(value);
+        public static implicit operator VarInt(ushort value) => new VarInt(value);
+        public static implicit operator VarInt(uint value) => new VarInt(value);
 
-        public static implicit operator short(VarInt value) => (short) value._value;
-        public static implicit operator int(VarInt value) => value._value;
-        public static implicit operator long(VarInt value) => value._value;
-        //public static implicit operator VarInt(Enum value) => new VarInt(Convert.ToInt32(value));
+        public static implicit operator ushort(VarInt value) => (ushort) value._value;
+        public static implicit operator uint(VarInt value) => value._value;
+        public static implicit operator ulong(VarInt value) => value._value;
+        public static implicit operator VarInt(Enum value) => new VarInt(Convert.ToUInt32(value));
 
 
         public static bool operator !=(VarInt a, VarInt b) => !a.Equals(b);
         public static bool operator ==(VarInt a, VarInt b) => a.Equals(b);
 
         public bool Equals(VarInt value) => _value.Equals(value._value);
-        public bool Equals(int other) => _value.Equals(other);
-
         public override bool Equals(object obj)
         {
             if (obj == null)
@@ -80,8 +79,5 @@ namespace Aragas.Network.Data
             return Equals((VarInt) obj);
         }
         public override int GetHashCode() => _value.GetHashCode();
-
-        public bool Equals(object x, object y) => false;
-        public int GetHashCode(object obj) => obj.GetHashCode();
     }
 }

@@ -10,13 +10,14 @@ namespace Aragas.Network.Data
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct VarLong : IEquatable<VarLong>
     {
-        public int Size => Variant.VariantSize((ulong) _value);
+        public int Size => Variant.VariantSize(_value);
 
 
-        private readonly long _value;
+        private readonly ulong _value;
 
 
-        public VarLong(long value) { _value = value; }
+        public VarLong(ulong value) { _value = value; }
+        public VarLong(long value) { _value = (ulong) value; }
 
 
         public byte[] Encode() => Encode(this);
@@ -24,9 +25,9 @@ namespace Aragas.Network.Data
 
         public override string ToString() => _value.ToString();
 
-        public static VarLong Parse(string str) => new VarLong(long.Parse(str));
+        public static VarLong Parse(string str) => new VarLong(ulong.Parse(str));
 
-        public static byte[] Encode(VarLong value) => Variant.Encode((ulong) value._value);
+        public static byte[] Encode(VarLong value) => Variant.Encode(value._value);
         public static int Encode(VarLong value, byte[] buffer, int offset)
         {
             var encoded = value.Encode();
@@ -40,8 +41,8 @@ namespace Aragas.Network.Data
             return encoded.Length;
         }
 
-        public static VarLong Decode(byte[] buffer, int offset) => new VarLong((long) Variant.Decode(buffer, offset));
-        public static VarLong Decode(Stream stream) => new VarLong((long) Variant.Decode(stream));
+        public static VarLong Decode(byte[] buffer, int offset) => new VarLong(Variant.Decode(buffer, offset));
+        public static VarLong Decode(Stream stream) => new VarLong(Variant.Decode(stream));
         public static int Decode(byte[] buffer, int offset, out VarLong result)
         {
             result = Decode(buffer, offset);
@@ -54,14 +55,14 @@ namespace Aragas.Network.Data
         }
 
 
-        public static explicit operator VarLong(short value) => new VarLong(value);
-        public static explicit operator VarLong(int value) => new VarLong(value);
-        public static explicit operator VarLong(long value) => new VarLong(value);
+        public static explicit operator VarLong(ushort value) => new VarLong(value);
+        public static explicit operator VarLong(uint value) => new VarLong(value);
+        public static explicit operator VarLong(ulong value) => new VarLong(value);
 
-        public static implicit operator short(VarLong value) => (short) value._value;
-        public static implicit operator int(VarLong value) => (int) value._value;
-        public static implicit operator long(VarLong value) => value._value;
-        public static implicit operator VarLong(Enum value) => new VarLong(Convert.ToInt64(value));
+        public static implicit operator ushort(VarLong value) => (ushort) value._value;
+        public static implicit operator uint(VarLong value) => (uint) value._value;
+        public static implicit operator ulong(VarLong value) => value._value;
+        public static implicit operator VarLong(Enum value) => new VarLong(Convert.ToUInt64(value));
 
 
         public static bool operator !=(VarLong a, VarLong b) => !a.Equals(b);
