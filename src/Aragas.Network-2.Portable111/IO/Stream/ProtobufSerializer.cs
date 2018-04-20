@@ -19,7 +19,7 @@ namespace Aragas.Network.IO
         #region Write
 
         // -- Anything
-        public override void Write<T>(T value = default(T), bool writeDefaultLength = true)
+        public override void Write<T>(T value = default, bool writeDefaultLength = true)
         {
             var type = value.GetType();
 

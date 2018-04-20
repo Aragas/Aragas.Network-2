@@ -11,11 +11,11 @@ namespace Aragas.Network.Packets
     /// <typeparam name="TDeserializer"><see cref="StandardDeserialiser"/>. You can create a custom one or use <see cref="ProtobufDeserialiser"/> and <see cref="ProtobufDeserialiser"/></typeparam>
     /// <typeparam name="TSerializer"><see cref="StandardSerializer"/>. You can create a custom one or use <see cref="ProtobufSerializer"/> and <see cref="System.Enum"/></typeparam>
     /// <typeparam name="TEnumType">Any integer type. See <see cref="byte"/>, <see cref="short"/>, <see cref="int"/>, <see cref="long"/>, any <see cref="Aragas.Network.Data.Variant"/></typeparam>
-    public abstract class PacketWithEnum<TEnumType, TSerializer, TDeserializer> : Packet<TEnumType, TSerializer, TDeserializer> 
-        where TEnumType : Enum where TSerializer : PacketSerializer where TDeserializer : PacketDeserializer
+    public abstract class PacketWithEnum<TEnum, TNumberType, TSerializer, TDeserializer> : Packet<TNumberType, TSerializer, TDeserializer> 
+        where TEnum : Enum where TSerializer : PacketSerializer where TDeserializer : PacketDeserializer
     {
-        public override TEnumType ID { get; }
+        public override TNumberType ID { get; }
 
-        protected PacketWithEnum() => ID = Enum.GetValues(typeof(TEnumType)).Cast<TEnumType>().Single(@enum => GetType().Name == $"{@enum}Packet");
+        protected PacketWithEnum() => ID = (TNumberType) (dynamic) Enum.GetValues(typeof(TEnum)).Cast<TEnum>().Single(@enum => GetType().Name == $"{@enum}Packet");
     }
 }
