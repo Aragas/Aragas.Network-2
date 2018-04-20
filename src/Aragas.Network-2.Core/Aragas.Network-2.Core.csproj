@@ -7,6 +7,7 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <AssemblyName>Aragas.Network</AssemblyName>
     <LangVersion>7.3</LangVersion>
+    <DocumentationFile>bin\Release\$(TargetFramework)\Aragas.Network.XML</DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
