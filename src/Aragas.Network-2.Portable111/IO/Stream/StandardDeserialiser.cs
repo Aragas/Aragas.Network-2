@@ -17,7 +17,7 @@ namespace Aragas.Network.IO
         #region Read
 
         // -- Anything
-        public override T Read<T>(T value = default(T), int length = 0)
+        public override T Read<T>(in T value = default, int length = 0)
         {
             T val;
             var type = value != null ? value.GetType() : typeof(T);

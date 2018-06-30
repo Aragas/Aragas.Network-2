@@ -14,57 +14,57 @@ namespace Aragas.Network.IO
         #region Write
 
         // -- Anything
-        public override void Write<T>(T value = default(T), bool writeDefaultLength = true)
+        public override void Write<T>(in T value = default, bool writeDefaultLength = true)
         {
             var type = typeof(T);
 
             if (type == typeof(string))
-                WriteString((string)(object)value);
+                WriteString(value as string);
 
             else if (type == typeof(bool))
-                WriteBoolean((bool)(object)value);
+                WriteBoolean((bool)(object) value);
 
             else if (type == typeof(sbyte))
-                WriteSByte((sbyte)(object)value);
+                WriteSByte((sbyte)(object) value);
             else if (type == typeof(byte))
-                WriteUByte((byte)(object)value);
+                WriteUByte((byte)(object) value);
 
             else if (type == typeof(short))
-                WriteShort((short)(object)value);
+                WriteShort((short)(object) value);
             else if (type == typeof(ushort))
-                WriteUShort((ushort)(object)value);
+                WriteUShort((ushort)(object) value);
 
             else if (type == typeof(int))
-                WriteInt((int)(object)value);
+                WriteInt((int)(object) value);
             else if (type == typeof(uint))
-                WriteUInt((uint)(object)value);
+                WriteUInt((uint)(object) value);
 
             else if (type == typeof(long))
-                WriteLong((long)(object)value);
+                WriteLong((long)(object) value);
             else if (type == typeof(ulong))
-                WriteULong((ulong)(object)value);
+                WriteULong((ulong)(object) value);
 
             else if (type == typeof(float))
-                WriteFloat((float)(object)value);
+                WriteFloat((float)(object) value);
 
             else if (type == typeof(double))
-                WriteDouble((double)(object)value);
+                WriteDouble((double)(object) value);
 
 
             else if (ExtendWriteContains(type))
-                ExtendWriteExecute(this, value);
+                ExtendWriteExecute(this, in value, writeDefaultLength);
 
 
             else if (type == typeof(string[]))
-                WriteStringArray((string[])(object)value, writeDefaultLength);
+                WriteStringArray(value as string[], writeDefaultLength);
             else if (type == typeof(int[]))
-                WriteIntArray((int[])(object)value, writeDefaultLength);
+                WriteIntArray(value as int[], writeDefaultLength);
             else if (type == typeof(byte[]))
-                WriteByteArray((byte[])(object)value, writeDefaultLength);
+                WriteByteArray(value as byte[], writeDefaultLength);
         }
 
         // -- String
-        private void WriteString(string value, int length = 0)
+        private void WriteString(in string value, int length = 0)
         {
             byte[] lengthBytes;
             byte[] final;
@@ -89,10 +89,10 @@ namespace Aragas.Network.IO
         }
 
         // -- Boolean
-        private void WriteBoolean(bool value) { Write(Convert.ToByte(value)); }
+        private void WriteBoolean(bool value) { WriteUByte(Convert.ToByte(value)); }
 
         // -- SByte & Byte
-        private void WriteSByte(sbyte value) { Write(unchecked((byte)value)); }
+        private void WriteSByte(sbyte value) { WriteUByte(unchecked((byte) value)); }
         private void WriteUByte(byte value) { ToBuffer(new[] { value }); }
 
         // -- Short & UShort
@@ -176,27 +176,27 @@ namespace Aragas.Network.IO
         private void WriteStringArray(string[] value, bool writeDefaultLength)
         {
             if (writeDefaultLength)
-                Write(value.Length);
+                WriteInt(value.Length);
 
             for (var i = 0; i < value.Length; i++)
-                Write(value[i]);
+                WriteString(in value[i]);
         }
 
         // -- IntArray
         private void WriteIntArray(int[] value, bool writeDefaultLength)
         {
             if (writeDefaultLength)
-                Write(value.Length);
+                WriteInt(value.Length);
 
             for (var i = 0; i < value.Length; i++)
-                Write(value[i]);
+                WriteInt(value[i]);
         }
 
         // -- ByteArray
         private void WriteByteArray(byte[] value, bool writeDefaultLength)
         {
             if (writeDefaultLength)
-                Write(value.Length);
+                WriteInt(value.Length);
 
             ToBuffer(value);
         }

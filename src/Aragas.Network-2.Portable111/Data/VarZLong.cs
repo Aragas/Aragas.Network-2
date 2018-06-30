@@ -8,7 +8,7 @@ namespace Aragas.Network.Data
     /// Encoded Int64. Optimal for negative values. Using zig-zag encoding. 
     /// </summary>
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public struct VarZLong : IEquatable<VarZLong>
+    public readonly struct VarZLong : IEquatable<VarZLong>
     {
         public int Size => Variant.VariantSize(Variant.ZigZagEncode(_value));
 
@@ -19,12 +19,12 @@ namespace Aragas.Network.Data
         public VarZLong(long value) { _value = value; }
 
 
-        public byte[] Encode() => Encode(this);
+        public byte[] Encode() => Encode(in this);
 
 
         public static VarZLong Parse(string str) => new VarZLong(long.Parse(str));
 
-        public static byte[] Encode(VarZLong value) => VarLong.Encode(new VarLong(Variant.ZigZagEncode(value)));
+        public static byte[] Encode(in VarZLong value) => VarLong.Encode(new VarLong(Variant.ZigZagEncode(value)));
 
         public static VarZLong Decode(byte[] buffer, int offset) => new VarZLong(Variant.ZigZagDecode(VarLong.Decode(buffer, offset)));
         public static VarZLong Decode(Stream stream) => new VarZLong(Variant.ZigZagDecode(VarLong.Decode(stream)));
@@ -44,14 +44,14 @@ namespace Aragas.Network.Data
         public static explicit operator VarZLong(int value) => new VarZLong(value);
         public static explicit operator VarZLong(long value) => new VarZLong(value);
 
-        public static implicit operator short(VarZLong value) => (short) value._value;
-        public static implicit operator int(VarZLong value) => (int) value._value;
-        public static implicit operator long(VarZLong value) => value._value;
+        public static implicit operator short(in VarZLong value) => (short) value._value;
+        public static implicit operator int(in VarZLong value) => (int) value._value;
+        public static implicit operator long(in VarZLong value) => value._value;
         public static implicit operator VarZLong(Enum value) => new VarZLong(Convert.ToInt64(value));
 
 
-        public static bool operator !=(VarZLong a, VarZLong b) => !a.Equals(b);
-        public static bool operator ==(VarZLong a, VarZLong b) => a.Equals(b);
+        public static bool operator !=(in VarZLong a, in VarZLong b) => !a.Equals(b);
+        public static bool operator ==(in VarZLong a, in VarZLong b) => a.Equals(b);
 
         public bool Equals(VarZLong value) => value._value.Equals(_value);
         public override bool Equals(object obj)

@@ -9,7 +9,7 @@ namespace Aragas.Network.Data
     /// Encoded String. Using VarLong as length.
     /// </summary>
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public struct VarString : IEquatable<VarString>
+    public readonly struct VarString : IEquatable<VarString>
     {
         public int Size => Length.Size + _value.Length;
 
@@ -20,12 +20,12 @@ namespace Aragas.Network.Data
         public VarString(string value) { _value = value; }
 
 
-        public byte[] Encode() => Encode(this);
+        public byte[] Encode() => Encode(in this);
 
 
         public override string ToString() => _value;
 
-        public static byte[] Encode(VarString value)
+        public static byte[] Encode(in VarString value)
         {
             var lengthArray = value.Length.Encode();
             var stringArray = Encoding.UTF8.GetBytes(value._value);
@@ -36,13 +36,13 @@ namespace Aragas.Network.Data
 
             return result;
         }
-        public static int Encode(VarString value, byte[] buffer, int offset)
+        public static int Encode(in VarString value, byte[] buffer, int offset)
         {
             var encoded = value.Encode();
             Buffer.BlockCopy(encoded, 0, buffer, offset, encoded.Length);
             return encoded.Length;
         }
-        public static int Encode(VarString value, Stream stream)
+        public static int Encode(in VarString value, Stream stream)
         {
             var encoded = value.Encode();
             stream.Write(encoded, 0, encoded.Length);
@@ -76,11 +76,11 @@ namespace Aragas.Network.Data
 
 
         public static implicit operator VarString(string value) => new VarString(value);
-        public static implicit operator string(VarString value) => value._value;
+        public static implicit operator string(in VarString value) => value._value;
 
 
-        public static bool operator !=(VarString a, VarString b) => !a.Equals(b);
-        public static bool operator ==(VarString a, VarString b) => a.Equals(b);
+        public static bool operator !=(in VarString a, in VarString b) => !a.Equals(b);
+        public static bool operator ==(in VarString a, in VarString b) => a.Equals(b);
 
         public bool Equals(VarString value) => value._value.Equals(_value);
         public override bool Equals(object obj)

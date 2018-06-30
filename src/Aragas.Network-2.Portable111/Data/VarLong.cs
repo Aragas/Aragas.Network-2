@@ -8,7 +8,7 @@ namespace Aragas.Network.Data
     /// Encoded Int64. Not optimal for negative values.
     /// </summary>
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public struct VarLong : IEquatable<VarLong>
+    public readonly struct VarLong : IEquatable<VarLong>
     {
         public int Size => Variant.VariantSize(_value);
 
@@ -20,21 +20,21 @@ namespace Aragas.Network.Data
         public VarLong(long value) { _value = (ulong) value; }
 
 
-        public byte[] Encode() => Encode(this);
+        public byte[] Encode() => Encode(in this);
 
 
         public override string ToString() => _value.ToString();
 
         public static VarLong Parse(string str) => new VarLong(ulong.Parse(str));
 
-        public static byte[] Encode(VarLong value) => Variant.Encode(value._value);
-        public static int Encode(VarLong value, byte[] buffer, int offset)
+        public static byte[] Encode(in VarLong value) => Variant.Encode(value._value);
+        public static int Encode(in VarLong value, byte[] buffer, int offset)
         {
             var encoded = value.Encode();
             Buffer.BlockCopy(encoded, 0, buffer, offset, encoded.Length);
             return encoded.Length;
         }
-        public static int Encode(VarLong value, Stream stream)
+        public static int Encode(in VarLong value, Stream stream)
         {
             var encoded = value.Encode();
             stream.Write(encoded, 0, encoded.Length);
@@ -59,14 +59,14 @@ namespace Aragas.Network.Data
         public static explicit operator VarLong(uint value) => new VarLong(value);
         public static explicit operator VarLong(ulong value) => new VarLong(value);
 
-        public static implicit operator ushort(VarLong value) => (ushort) value._value;
-        public static implicit operator uint(VarLong value) => (uint) value._value;
-        public static implicit operator ulong(VarLong value) => value._value;
+        public static implicit operator ushort(in VarLong value) => (ushort) value._value;
+        public static implicit operator uint(in VarLong value) => (uint) value._value;
+        public static implicit operator ulong(in VarLong value) => value._value;
         public static implicit operator VarLong(Enum value) => new VarLong(Convert.ToUInt64(value));
 
 
-        public static bool operator !=(VarLong a, VarLong b) => !a.Equals(b);
-        public static bool operator ==(VarLong a, VarLong b) => a.Equals(b);
+        public static bool operator !=(in VarLong a, in VarLong b) => !a.Equals(b);
+        public static bool operator ==(in VarLong a, in VarLong b) => a.Equals(b);
 
         public bool Equals(VarLong value) => value._value.Equals(_value);
         public override bool Equals(object obj)

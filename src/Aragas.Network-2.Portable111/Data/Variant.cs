@@ -7,7 +7,7 @@ namespace Aragas.Network.Data
         internal static int VariantSize(ulong value)
         {
             var outputSize = 0;
-            while (value > 127)
+            while (value > 0b_01111111UL)
             {
                 outputSize++;
                 value >>= 7;
@@ -17,7 +17,7 @@ namespace Aragas.Network.Data
         internal static int VariantSize(long value)
         {
             var outputSize = 0;
-            while (value > 127)
+            while (value > 0b_01111111L)
             {
                 outputSize++;
                 value >>= 7;
@@ -32,7 +32,7 @@ namespace Aragas.Network.Data
 
             for (var i = 0; i < array.Length - 1; i++)
             {
-                array[i] = (byte) (value & 127 | 128u);
+                array[i] = (byte) (value & 0b_01111111U | 0b_10000000U);
                 value >>= 7;
             }
             array[array.Length - 1] = (byte) value;
@@ -48,9 +48,8 @@ namespace Aragas.Network.Data
             do
             {
                 currByte = buffer[offset + index++];
-                ulong lowByte = currByte & 127u;
-                decodedValue |= lowByte << shiftAmount++ * 7;
-            } while ((currByte & 128u) != 0);
+                decodedValue |= currByte & 0b_01111111U << 7 * shiftAmount++;
+            } while ((currByte & 0b_10000000U) != 0);
 
             return decodedValue;
         }
@@ -62,18 +61,14 @@ namespace Aragas.Network.Data
             do
             {
                 currByte = (byte) stream.ReadByte();
-                ulong lowByte = currByte & 127u;
-                decodedValue |= lowByte << shiftAmount++ * 7;
-            } while ((currByte & 128u) != 0);
+                decodedValue |= currByte & 0b_01111111U << 7 * shiftAmount++;
+            } while ((currByte & 0b_10000000U) != 0);
 
             return decodedValue;
         }
 
-        internal static long ZigZagEncode(long value) => (value << 1) ^ (value >> 63);
-        internal static long ZigZagDecode(long value)
-        {
-            var temp = (((value << 63) >> 63) ^ value) >> 1;
-            return temp ^ (value & (1L << 63));
-        }
+        internal static long ZigZagEncode(long value, int k = 64) => (value << 1) ^ (value >> k - 1);
+        internal static long ZigZagDecode(long value, int k = 64) => 
+            ((((value << k - 1) >> k - 1) ^ value) >> 1) ^ (value & (1L << k - 1));
     }
 }

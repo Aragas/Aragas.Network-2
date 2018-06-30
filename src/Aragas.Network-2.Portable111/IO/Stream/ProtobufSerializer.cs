@@ -19,12 +19,12 @@ namespace Aragas.Network.IO
         #region Write
 
         // -- Anything
-        public override void Write<T>(T value = default, bool writeDefaultLength = true)
+        public override void Write<T>(in T value = default, bool writeDefaultLength = true)
         {
             var type = value.GetType();
 
             if (type == typeof (string))
-                WriteString((string) (object) value);
+                WriteString(value as string);
 
             else if (type == typeof (VarShort))
                 WriteVarShort((VarShort) (object) value);
@@ -71,27 +71,27 @@ namespace Aragas.Network.IO
 
 
             else if (ExtendWriteContains(type))
-                ExtendWriteExecute(this, value, writeDefaultLength);
+                ExtendWriteExecute(this, in value, writeDefaultLength);
 
 
             else if (type == typeof (string[]))
-                WriteStringArray((string[]) (object) value, writeDefaultLength);
+                WriteStringArray(value as string[], writeDefaultLength);
             else if (type == typeof (int[]))
-                WriteIntArray((int[]) (object) value, writeDefaultLength);
+                WriteIntArray(value as int[], writeDefaultLength);
             else if (type == typeof (byte[]))
-                WriteByteArray((byte[]) (object) value, writeDefaultLength);
+                WriteByteArray(value as byte[], writeDefaultLength);
             else if (type == typeof (VarShort[]))
-                WriteVarShortArray((VarShort[]) (object) value, writeDefaultLength);
+                WriteVarShortArray(value as VarShort[], writeDefaultLength);
             else if (type == typeof (VarZShort[]))
-                WriteVarZShortArray((VarZShort[]) (object) value, writeDefaultLength);
+                WriteVarZShortArray(value as VarZShort[], writeDefaultLength);
             else if (type == typeof (VarInt[]))
-                WriteVarIntArray((VarInt[]) (object) value, writeDefaultLength);
+                WriteVarIntArray(value as VarInt[], writeDefaultLength);
             else if (type == typeof (VarZInt[]))
-                WriteVarZIntArray((VarZInt[]) (object) value, writeDefaultLength);
+                WriteVarZIntArray(value as VarZInt[], writeDefaultLength);
             else if (type == typeof (VarLong[]))
-                WriteVarLongArray((VarLong[]) (object) value, writeDefaultLength);
+                WriteVarLongArray(value as VarLong[], writeDefaultLength);
             else if (type == typeof (VarZLong[]))
-                WriteVarZLongArray((VarZLong[]) (object) value, writeDefaultLength);
+                WriteVarZLongArray(value as VarZLong[], writeDefaultLength);
         }
 
         // -- String
@@ -111,20 +111,20 @@ namespace Aragas.Network.IO
         }
 
         // -- Variants
-        private void WriteVarShort(VarShort value) { ToBuffer(value.Encode()); }
-        private void WriteVarZShort(VarZShort value) { ToBuffer(value.Encode()); }
+        private void WriteVarShort(in VarShort value) { ToBuffer(value.Encode()); }
+        private void WriteVarZShort(in VarZShort value) { ToBuffer(value.Encode()); }
 
-        private void WriteVarInt(VarInt value) { ToBuffer(value.Encode()); }
-        private void WriteVarZInt(VarZInt value) { ToBuffer(value.Encode()); }
+        private void WriteVarInt(in VarInt value) { ToBuffer(value.Encode()); }
+        private void WriteVarZInt(in VarZInt value) { ToBuffer(value.Encode()); }
 
-        private void WriteVarLong(VarLong value) { ToBuffer(value.Encode()); }
-        private void WriteVarZLong(VarZLong value) { ToBuffer(value.Encode()); }
+        private void WriteVarLong(in VarLong value) { ToBuffer(value.Encode()); }
+        private void WriteVarZLong(in VarZLong value) { ToBuffer(value.Encode()); }
 
         // -- Boolean
-        private void WriteBoolean(bool value) { Write(Convert.ToByte(value)); }
+        private void WriteBoolean(bool value) { WriteUByte(Convert.ToByte(value)); }
 
         // -- SByte & Byte
-        private void WriteSByte(sbyte value) { Write(unchecked((byte) value)); }
+        private void WriteSByte(sbyte value) { WriteUByte(unchecked((byte) value)); }
         private void WriteUByte(byte value) { ToBuffer(new[] { value }); }
 
         // -- Short & UShort
@@ -208,79 +208,79 @@ namespace Aragas.Network.IO
         private void WriteStringArray(string[] value, bool writeDefaultLength)
         {
             if(writeDefaultLength)
-                Write(new VarInt(value.Length));
+                WriteVarInt(new VarInt(value.Length));
 
             for (var i = 0; i < value.Length; i++)
-                Write(value[i]);
+                WriteString(value[i]);
         }
 
         // -- Variable Array
-        private void WriteVarShortArray(VarShort[] value, bool writeDefaultLength)
+        private void WriteVarShortArray(in VarShort[] value, bool writeDefaultLength)
         {
             if (writeDefaultLength)
-                Write(new VarInt(value.Length));
+                WriteVarInt(new VarInt(value.Length));
 
             for (var i = 0; i < value.Length; i++)
-                Write(value[i]);
+                WriteVarShort(in value[i]);
         }
-        private void WriteVarZShortArray(VarZShort[] value, bool writeDefaultLength)
+        private void WriteVarZShortArray(in VarZShort[] value, bool writeDefaultLength)
         {
             if (writeDefaultLength)
-                Write(new VarInt(value.Length));
+                WriteVarInt(new VarInt(value.Length));
 
             for (var i = 0; i < value.Length; i++)
-                Write(value[i]);
-        }
-
-        private void WriteVarIntArray(VarInt[] value, bool writeDefaultLength)
-        {
-            if (writeDefaultLength)
-                Write(new VarInt(value.Length));
-
-            for (var i = 0; i < value.Length; i++)
-                Write(value[i]);
-        }
-        private void WriteVarZIntArray(VarZInt[] value, bool writeDefaultLength)
-        {
-            if (writeDefaultLength)
-                Write(new VarInt(value.Length));
-
-            for (var i = 0; i < value.Length; i++)
-                Write(value[i]);
+                WriteVarZShort(in value[i]);
         }
 
-        private void WriteVarLongArray(VarLong[] value, bool writeDefaultLength)
+        private void WriteVarIntArray(in VarInt[] value, bool writeDefaultLength)
         {
             if (writeDefaultLength)
-                Write(new VarInt(value.Length));
+                WriteVarInt(new VarInt(value.Length));
 
             for (var i = 0; i < value.Length; i++)
-                Write(value[i]);
+                WriteVarInt(in value[i]);
         }
-        private void WriteVarZLongArray(VarZLong[] value, bool writeDefaultLength)
+        private void WriteVarZIntArray(in VarZInt[] value, bool writeDefaultLength)
         {
             if (writeDefaultLength)
-                Write(new VarInt(value.Length));
+                WriteVarInt(new VarInt(value.Length));
 
             for (var i = 0; i < value.Length; i++)
-                Write(value[i]);
+                WriteVarZInt(in value[i]);
+        }
+
+        private void WriteVarLongArray(in VarLong[] value, bool writeDefaultLength)
+        {
+            if (writeDefaultLength)
+                WriteVarInt(new VarInt(value.Length));
+
+            for (var i = 0; i < value.Length; i++)
+                WriteVarLong(in value[i]);
+        }
+        private void WriteVarZLongArray(in VarZLong[] value, bool writeDefaultLength)
+        {
+            if (writeDefaultLength)
+                WriteVarInt(new VarInt(value.Length));
+
+            for (var i = 0; i < value.Length; i++)
+                WriteVarZLong(in value[i]);
         }
 
         // -- IntArray
         private void WriteIntArray(int[] value, bool writeDefaultLength)
         {
             if (writeDefaultLength)
-                Write(new VarInt(value.Length));
+                WriteVarInt(new VarInt(value.Length));
 
             for (var i = 0; i < value.Length; i++)
-                Write(value[i]);
+                WriteInt(value[i]);
         }
 
         // -- ByteArray
         private void WriteByteArray(byte[] value, bool writeDefaultLength)
         {
             if (writeDefaultLength)
-                Write(new VarInt(value.Length));
+                WriteVarInt(new VarInt(value.Length));
 
             ToBuffer(value);
         }

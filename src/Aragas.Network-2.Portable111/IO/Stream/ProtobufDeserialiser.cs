@@ -21,7 +21,7 @@ namespace Aragas.Network.IO
         #region Read
 
         // -- Anything
-        public override T Read<T>(T value = default, int length = 0)
+        public override T Read<T>(in T value = default, int length = 0)
         {
             T val;
             var type = value != null? value.GetType() : typeof(T);
@@ -361,7 +361,7 @@ namespace Aragas.Network.IO
         private byte[] ReadByteArray(int length)
         {
             if (length == 0)
-                return new byte[length];
+                return new byte[0];
 
             var msg = new byte[length];
             var readSoFar = 0;

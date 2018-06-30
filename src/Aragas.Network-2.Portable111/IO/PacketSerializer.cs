@@ -20,7 +20,7 @@ namespace Aragas.Network.IO
         protected static bool ExtendWriteContains<T>() => ExtendWriteContains(typeof(T));
         protected static bool ExtendWriteContains(Type type) => WriteExtendedList.ContainsKey(type.GetHashCode());
 
-        protected static void ExtendWriteExecute<T>(StreamSerializer stream, T value, bool writeDefaultLength = true)
+        protected static void ExtendWriteExecute<T>(StreamSerializer stream, in T value, bool writeDefaultLength = true)
         {
             if (WriteExtendedList.TryGetValue(typeof(T).GetHashCode(), out var action))
                 action.Invoke(stream, value, writeDefaultLength);
@@ -28,7 +28,7 @@ namespace Aragas.Network.IO
 
         #endregion ExtendWrite
 
-        public abstract void Write<TDataType>(TDataType value = default(TDataType), bool writeDefaultLength = true);
+        public abstract void Write<TDataType>(in TDataType value = default, bool writeDefaultLength = true);
 
         public abstract void Dispose();
     }

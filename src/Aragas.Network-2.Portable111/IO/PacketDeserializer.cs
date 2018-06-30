@@ -19,19 +19,19 @@ namespace Aragas.Network.IO
         protected static bool ExtendReadContains<T>() => ExtendReadContains(typeof(T));
         protected static bool ExtendReadContains(Type type) => ReadExtendedList.ContainsKey(type.GetHashCode());
 
-        protected static T ExtendReadExecute<T>(StreamDeserializer reader, int length = 0) => ExtendReadContains<T>() ? (T) ReadExtendedList[typeof(T).GetHashCode()](reader, length) : default(T);
+        protected static T ExtendReadExecute<T>(StreamDeserializer reader, int length = 0) => ExtendReadContains<T>() ? (T) ReadExtendedList[typeof(T).GetHashCode()](reader, length) : default;
 
         protected static bool ExtendReadTryExecute<T>(StreamDeserializer reader, int length, out T value)
         {
             var exist = ReadExtendedList.TryGetValue(typeof(T).GetHashCode(), out var func);
-            value = exist ? (T)func.Invoke(reader, length) : default(T);
+            value = exist ? (T)func.Invoke(reader, length) : default;
 
             return exist;
         }
 
         #endregion ExtendRead
 
-        public abstract T Read<T>(T value = default(T), int length = 0);
+        public abstract T Read<T>(in T value = default, int length = 0);
 
         public abstract int BytesLeft();
 

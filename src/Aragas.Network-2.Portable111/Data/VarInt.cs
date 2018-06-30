@@ -8,7 +8,7 @@ namespace Aragas.Network.Data
     /// Encoded Int32. Not optimal for negative values.
     /// </summary>
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public struct VarInt : IEquatable<VarInt>
+    public readonly struct VarInt : IEquatable<VarInt>
     {
         public int Size => Variant.VariantSize(_value);
 
@@ -20,21 +20,21 @@ namespace Aragas.Network.Data
         public VarInt(int value) { _value = (uint) value; }
 
 
-        public byte[] Encode() => Encode(this);
+        public byte[] Encode() => Encode(in this);
 
 
         public override string ToString() => _value.ToString();
 
         public static VarInt Parse(string str) => new VarInt(uint.Parse(str));
         
-        public static byte[] Encode(VarInt value) => Variant.Encode(value._value);
-        public static int Encode(VarInt value, byte[] buffer, int offset)
+        public static byte[] Encode(in VarInt value) => Variant.Encode(value._value);
+        public static int Encode(in VarInt value, byte[] buffer, int offset)
         {
             var encoded = value.Encode();
             Buffer.BlockCopy(encoded, 0, buffer, offset, encoded.Length);
             return encoded.Length;
         }
-        public static int Encode(VarInt value, Stream stream)
+        public static int Encode(in VarInt value, Stream stream)
         {
             var encoded = value.Encode();
             stream.Write(encoded, 0, encoded.Length);
@@ -58,14 +58,14 @@ namespace Aragas.Network.Data
         public static implicit operator VarInt(ushort value) => new VarInt(value);
         public static implicit operator VarInt(uint value) => new VarInt(value);
 
-        public static implicit operator ushort(VarInt value) => (ushort) value._value;
-        public static implicit operator uint(VarInt value) => value._value;
-        public static implicit operator ulong(VarInt value) => value._value;
+        public static implicit operator ushort(in VarInt value) => (ushort) value._value;
+        public static implicit operator uint(in VarInt value) => value._value;
+        public static implicit operator ulong(in VarInt value) => value._value;
         public static implicit operator VarInt(Enum value) => new VarInt(Convert.ToUInt32(value));
 
 
-        public static bool operator !=(VarInt a, VarInt b) => !a.Equals(b);
-        public static bool operator ==(VarInt a, VarInt b) => a.Equals(b);
+        public static bool operator !=(in VarInt a, in VarInt b) => !a.Equals(b);
+        public static bool operator ==(in VarInt a, in VarInt b) => a.Equals(b);
 
         public bool Equals(VarInt value) => _value.Equals(value._value);
         public override bool Equals(object obj)
