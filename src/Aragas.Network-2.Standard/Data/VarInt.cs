@@ -9,49 +9,37 @@ namespace Aragas.Network.Data
     /// Encoded Int32. Not optimal for negative values.
     /// </summary>
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public readonly struct VarInt : IEquatable<VarInt>
+    public readonly struct VarInt : IVariant, IEquatable<VarInt>
     {
-        public int Size => Variant.VariantSize(_value);
-
+        public int Size => IVariant.VariantSize(_value);
 
         private readonly uint _value;
-
 
         public VarInt(uint value) { _value = value; }
         public VarInt(int value) { _value = (uint) value; }
 
-
-        public byte[] Encode() => Encode(this);
-
+        public Span<byte> Encode() => Encode(this);
 
         public override string ToString() => _value.ToString(CultureInfo.InvariantCulture);
 
         public static VarInt Parse(string str) => new VarInt(uint.Parse(str, CultureInfo.InvariantCulture));
-        
-        public static byte[] Encode(VarInt value) => Variant.Encode(value._value);
-        public static int Encode(VarInt value, byte[] buffer, int offset)
+
+        public static Span<byte> Encode(VarInt value) => IVariant.Encode(value._value);
+        public static int Encode(VarInt value, in Span<byte> buffer)
         {
-            return Variant.Encode(buffer, offset, value._value);
-            //var encoded = value.Encode();
-            //Array.Copy(encoded, 0, buffer, offset, encoded.Length);
-            //return encoded.Length;
+            Span<byte> encoded = Encode(value);
+            encoded.CopyTo(buffer.Slice(0, encoded.Length));
+            return encoded.Length;
         }
         public static int Encode(VarInt value, Stream stream)
         {
-            return Variant.Encode(stream, value._value);
-            //var encoded = value.Encode();
-            //stream.Write(encoded, 0, encoded.Length);
-            //return encoded.Length;
+            Span<byte> encoded = Encode(value);
+            stream.Write(encoded);
+            return encoded.Length;
         }
 
-        public static VarInt Decode(in ReadOnlySpan<byte> buffer) => new VarInt((uint) Variant.Decode(in buffer));
-        public static VarInt Decode(byte[] buffer, int offset) => new VarInt((uint) Variant.Decode(buffer, offset));
-        public static VarInt Decode(Stream stream) => new VarInt((uint) Variant.Decode(stream));
-        public static int Decode(byte[] buffer, int offset, out VarInt result)
-        {
-            result = Decode(buffer, offset);
-            return result.Size;
-        }
+        public static VarInt Decode(in ReadOnlySpan<byte> buffer) => new VarInt((uint) IVariant.Decode(in buffer));
+        public static VarInt Decode(Stream stream) => new VarInt((uint) IVariant.Decode(stream));
         public static int Decode(Stream stream, out VarInt result)
         {
             result = Decode(stream);

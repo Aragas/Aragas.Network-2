@@ -9,9 +9,9 @@ namespace Aragas.Network.Data
     /// Encoded Int64. Not optimal for negative values.
     /// </summary>
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public readonly struct VarLong : IEquatable<VarLong>
+    public readonly struct VarLong : IVariant, IEquatable<VarLong>
     {
-        public int Size => Variant.VariantSize(_value);
+        public int Size => IVariant.VariantSize(_value);
 
 
         private readonly ulong _value;
@@ -21,37 +21,29 @@ namespace Aragas.Network.Data
         public VarLong(long value) { _value = (ulong) value; }
 
 
-        public byte[] Encode() => Encode(this);
+        public Span<byte> Encode() => Encode(this);
 
 
         public override string ToString() => _value.ToString(CultureInfo.InvariantCulture);
 
         public static VarLong Parse(string str) => new VarLong(ulong.Parse(str, CultureInfo.InvariantCulture));
 
-        public static byte[] Encode(VarLong value) => Variant.Encode(value._value);
-        public static int Encode(VarLong value, byte[] buffer, int offset)
+        public static Span<byte> Encode(VarLong value) => IVariant.Encode(value._value);
+        public static int Encode(VarLong value, in Span<byte> buffer)
         {
-            return Variant.Encode(buffer, offset, value._value);
-            //var encoded = value.Encode();
-            //Array.Copy(encoded, 0, buffer, offset, encoded.Length);
-            //return encoded.Length;
+            Span<byte> encoded = Encode(value);
+            encoded.CopyTo(buffer.Slice(0, encoded.Length));
+            return encoded.Length;
         }
         public static int Encode(VarLong value, Stream stream)
         {
-            return Variant.Encode(stream, value._value);
-            //var encoded = value.Encode();
-            //stream.Write(encoded, 0, encoded.Length);
-            //return encoded.Length;
+            Span<byte> encoded = Encode(value);
+            stream.Write(encoded);
+            return encoded.Length;
         }
 
-        public static VarLong Decode(in ReadOnlySpan<byte> buffer) => new VarLong(Variant.Decode(in buffer));
-        public static VarLong Decode(byte[] buffer, int offset) => new VarLong(Variant.Decode(buffer, offset));
-        public static VarLong Decode(Stream stream) => new VarLong(Variant.Decode(stream));
-        public static int Decode(byte[] buffer, int offset, out VarLong result)
-        {
-            result = Decode(buffer, offset);
-            return result.Size;
-        }
+        public static VarLong Decode(in ReadOnlySpan<byte> buffer) => new VarLong(IVariant.Decode(in buffer));
+        public static VarLong Decode(Stream stream) => new VarLong(IVariant.Decode(stream));
         public static int Decode(Stream stream, out VarLong result)
         {
             result = Decode(stream);

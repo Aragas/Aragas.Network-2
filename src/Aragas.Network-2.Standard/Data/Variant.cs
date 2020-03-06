@@ -1,47 +1,82 @@
 ﻿using System;
 using System.Buffers;
 using System.IO;
+using System.Runtime.CompilerServices;
 
 namespace Aragas.Network.Data
 {
-    internal static class Variant
+    public interface IVariant
     {
-        internal static int VariantSize(ulong value)
+        protected static int VariantSize(ulong value)
         {
             var outputSize = 0;
-            while (value > 127)
+            do
             {
-                outputSize++;
                 value >>= 7;
-            }
-            return ++outputSize;
+                outputSize++;
+            } while (value != 0);
+            return outputSize;
         }
-        internal static int VariantSize(long value)
+        /// <summary>
+        /// This will be used for Int8, Int16 and Int32
+        /// </summary>
+        protected static int VariantSize(int value)
         {
+            var unsignedValue = (uint) value;
             var outputSize = 0;
-            while (value > 127)
+            do
             {
+                unsignedValue >>= 7;
                 outputSize++;
-                value >>= 7;
-            }
-            return ++outputSize;
+            } while (unsignedValue != 0);
+            return outputSize;
+        }
+        /// <summary>
+        /// This will be used for Int64
+        /// </summary>
+        protected static int VariantSize(long value)
+        {
+            var unsignedValue = (ulong) value;
+            var outputSize = 0;
+            do
+            {
+                unsignedValue >>= 7;
+                outputSize++;
+            } while (unsignedValue != 0);
+            return outputSize;
         }
 
-        internal static byte[] Encode(ulong value)
+        protected static Span<byte> Encode(in long value) => Encode((ulong) value);
+        protected static int Encode(in Span<byte> buffer, ulong value)
         {
             var size = VariantSize(value);
-            var array = new byte[size];
+            if (buffer.Length < size)
+                return -1;
 
-            for (var i = 0; i < array.Length - 1; i++)
+            for (var i = 0; i < size - 1; i++)
             {
-                array[i] = (byte) ((value & 127) | 128u);
+                buffer[i] = (byte) ((value & 127) | 128u);
                 value >>= 7;
             }
-            array[^1] = (byte) value;
+            buffer[size - 1] = (byte) value;
 
-            return array;
+            return size;
         }
-        internal static int Encode(byte[] buffer, int offset, ulong value)
+        protected static Span<byte> Encode(ulong value)
+        {
+            var size = VariantSize(value);
+            Span<byte> buffer = new byte[size];
+
+            for (var i = 0; i < buffer.Length - 1; i++)
+            {
+                buffer[i] = (byte) ((value & 127) | 128u);
+                value >>= 7;
+            }
+            buffer[size - 1] = (byte) value;
+
+            return buffer;
+        }
+        protected static int Encode(byte[] buffer, int offset, ulong value)
         {
             var size = VariantSize(value);
 
@@ -54,7 +89,7 @@ namespace Aragas.Network.Data
 
             return size;
         }
-        internal static int Encode(Stream stream, ulong value)
+        protected static int Encode(Stream stream, ulong value)
         {
             var size = VariantSize(value);
 
@@ -68,7 +103,7 @@ namespace Aragas.Network.Data
             return size;
         }
 
-        internal static ulong? Decode(in ReadOnlySequence<byte> sequence)
+        protected static ulong? Decode(in ReadOnlySequence<byte> sequence)
         {
             if(sequence.IsSingleSegment)
                 return Decode(sequence.First.Span);
@@ -101,7 +136,7 @@ namespace Aragas.Network.Data
             }
             return decodedValue;
         }
-        internal static ulong Decode(in ReadOnlySpan<byte> buffer)
+        protected static ulong Decode(in ReadOnlySpan<byte> buffer)
         {
             ulong decodedValue = 0;
             int index = 0, shiftAmount = 0;
@@ -115,7 +150,7 @@ namespace Aragas.Network.Data
 
             return decodedValue;
         }
-        internal static ulong Decode(byte[] buffer, int offset)
+        protected static ulong Decode(byte[] buffer, int offset)
         {
             ulong decodedValue = 0;
             int index = 0, shiftAmount = 0;
@@ -129,8 +164,9 @@ namespace Aragas.Network.Data
 
             return decodedValue;
         }
-        internal static ulong Decode(Stream stream)
+        protected static ulong Decode(Stream stream)
         {
+            int iterations = 0;
             ulong decodedValue = 0;
             int shiftAmount = 0;
             byte currByte;
@@ -139,16 +175,32 @@ namespace Aragas.Network.Data
                 currByte = (byte) stream.ReadByte();
                 ulong lowByte = currByte & 127u;
                 decodedValue |= lowByte << shiftAmount++ * 7;
+
+                if (iterations > 10)
+                    throw new Exception();
             } while ((currByte & 128u) != 0);
 
             return decodedValue;
         }
 
-        internal static long ZigZagEncode(long value) => (value << 1) ^ (value >> 63);
-        internal static long ZigZagDecode(long value)
+        protected static ulong ZigZagEncode(long value)
         {
-            var temp = (((value << 63) >> 63) ^ value) >> 1;
-            return temp ^ (value & (1L << 63));
+            var signed = (value << 1) ^ (value >> 63);
+            return Unsafe.As<long, ulong>(ref signed);
         }
+
+        protected static long ZigZagDecode(ulong value)
+        {
+            var unsigned = Unsafe.As<ulong, long>(ref value);
+            //if ((value & 0x1) == 0x1)
+            //    return (-1 * ((unsigned >> 1) + 1));
+            //return (unsigned >> 1);
+
+            var temp = (((unsigned << 63) >> 63) ^ unsigned) >> 1;
+            return temp ^ (unsigned & (1L << 63));
+        }
+
+        int Size { get; }
+        Span<byte> Encode();
     }
 }

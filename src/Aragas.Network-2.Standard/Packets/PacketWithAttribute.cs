@@ -32,7 +32,7 @@ namespace Aragas.Network.Packets
         /// </summary>
         /// <typeparam name="T"></typeparam>
         [Serializable]
-        internal protected struct Initializable<T>
+        protected struct Initializable<T>
         {
             private readonly bool hasInitialized;  // Do not rename (binary serialization)
             private readonly T value; // Do not rename (binary serialization)
@@ -44,19 +44,14 @@ namespace Aragas.Network.Packets
             }
 
             [System.Diagnostics.CodeAnalysis.SuppressMessage("Simplification", "RCS1085:Use auto-implemented property.", Justification = "Binary serialization")]
-            public bool HasInitialized
-            {
-                get => hasInitialized;
-            }
+            public bool HasInitialized { get => hasInitialized; }
 
             public T Value
             {
                 get
                 {
                     if (!hasInitialized)
-                    {
                         throw new Exception();
-                    }
                     return value;
                 }
             }

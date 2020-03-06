@@ -9,49 +9,37 @@ namespace Aragas.Network.Data
     /// Encoded Int16. Not optimal for negative values.
     /// </summary>
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public readonly struct VarShort : IEquatable<VarShort>
+    public readonly struct VarShort : IVariant, IEquatable<VarShort>
     {
-        public int Size => Variant.VariantSize(_value);
-
+        public int Size => IVariant.VariantSize(_value);
 
         private readonly ushort _value;
-
 
         public VarShort(ushort value) { _value = value; }
         public VarShort(short value) { _value = (ushort) value; }
 
-
-        public byte[] Encode() => Encode(this);
-
+        public Span<byte> Encode() => Encode(this);
 
         public override string ToString() => _value.ToString(CultureInfo.InvariantCulture);
 
         public static VarShort Parse(string str) => new VarShort(ushort.Parse(str, CultureInfo.InvariantCulture));
 
-        public static byte[] Encode(VarShort value) => Variant.Encode(value._value);
-        public static int Encode(VarShort value, byte[] buffer, int offset)
+        public static Span<byte> Encode(VarShort value) => IVariant.Encode(value._value);
+        public static int Encode(VarShort value, in Span<byte> buffer)
         {
-            return Variant.Encode(buffer, offset, value._value);
-            //var encoded = value.Encode();
-            //Array.Copy(encoded, 0, buffer, offset, encoded.Length);
-            //return encoded.Length;
+            Span<byte> encoded = Encode(value);
+            encoded.CopyTo(buffer.Slice(0, encoded.Length));
+            return encoded.Length;
         }
         public static int Encode(VarShort value, Stream stream)
         {
-            return Variant.Encode(stream, value._value);
-            //var encoded = value.Encode();
-            //stream.Write(encoded, 0, encoded.Length);
-            //return encoded.Length;
+            Span<byte> encoded = Encode(value);
+            stream.Write(encoded);
+            return encoded.Length;
         }
 
-        public static VarShort Decode(in ReadOnlySpan<byte> buffer) => new VarShort((ushort) Variant.Decode(in buffer));
-        public static VarShort Decode(byte[] buffer, int offset) => new VarShort((ushort) Variant.Decode(buffer, offset));
-        public static VarShort Decode(Stream stream) => new VarShort((ushort) Variant.Decode(stream));
-        public static int Decode(byte[] buffer, int offset, out VarShort result)
-        {
-            result = Decode(buffer, offset);
-            return result.Size;
-        }
+        public static VarShort Decode(in ReadOnlySpan<byte> buffer) => new VarShort((ushort) IVariant.Decode(in buffer));
+        public static VarShort Decode(Stream stream) => new VarShort((ushort) IVariant.Decode(stream));
         public static int Decode(Stream stream, out VarShort result)
         {
             result = Decode(stream);

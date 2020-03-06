@@ -9,9 +9,9 @@ namespace Aragas.Network.Data
     /// Encoded Int32. Optimal for negative values. Using zig-zag encoding. 
     /// </summary>
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public readonly struct VarZInt : IEquatable<VarZInt>
+    public readonly struct VarZInt : IVariant, IEquatable<VarZInt>
     {
-        public int Size => Variant.VariantSize(Variant.ZigZagEncode(_value));
+        public int Size => IVariant.VariantSize(IVariant.ZigZagEncode(_value));
 
 
         private readonly int _value;
@@ -20,29 +20,34 @@ namespace Aragas.Network.Data
         public VarZInt(int value) { _value = value; }
 
 
-        public byte[] Encode() => Encode(this);
+        public Span<byte> Encode() => Encode(this);
 
 
         public override string ToString() => _value.ToString(CultureInfo.InvariantCulture);
 
         public static VarZInt Parse(string str) => new VarZInt(int.Parse(str, CultureInfo.InvariantCulture));
 
-        public static byte[] Encode(VarZInt value) => VarInt.Encode(new VarInt((int) Variant.ZigZagEncode(value._value)));
-
-        public static VarZInt Decode(in ReadOnlySpan<byte> buffer) => new VarZInt((int) Variant.ZigZagDecode(VarInt.Decode(in buffer)));
-        public static VarZInt Decode(byte[] buffer, int offset) => new VarZInt((int) Variant.ZigZagDecode(VarInt.Decode(buffer, offset)));
-        public static VarZInt Decode(Stream stream) => new VarZInt((int) Variant.ZigZagDecode(VarInt.Decode(stream)));
-        public static int Decode(byte[] buffer, int offset, out VarZInt result)
+        public static Span<byte> Encode(VarZInt value) => IVariant.Encode(IVariant.ZigZagEncode(value._value));
+        public static int Encode(VarZInt value, in Span<byte> buffer)
         {
-            result = Decode(buffer, offset);
-            return result.Size;
+            Span<byte> encoded = Encode(value);
+            encoded.CopyTo(buffer.Slice(0, encoded.Length));
+            return encoded.Length;
         }
+        public static int Encode(VarZInt value, Stream stream)
+        {
+            Span<byte> encoded = Encode(value);
+            stream.Write(encoded);
+            return encoded.Length;
+        }
+
+        public static VarZInt Decode(in ReadOnlySpan<byte> buffer) => new VarZInt((int) IVariant.ZigZagDecode(IVariant.Decode(in buffer)));
+        public static VarZInt Decode(Stream stream) => new VarZInt((int) IVariant.ZigZagDecode(IVariant.Decode(stream)));
         public static int Decode(Stream stream, out VarZInt result)
         {
             result = Decode(stream);
             return result.Size;
         }
-
 
         public static explicit operator VarZInt(short value) => new VarZInt(value);
         public static explicit operator VarZInt(int value) => new VarZInt(value);

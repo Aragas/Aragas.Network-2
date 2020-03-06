@@ -9,70 +9,55 @@ namespace Aragas.Network.Data
     /// Encoded String. Using VarLong as length.
     /// </summary>
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public readonly struct VarString : IEquatable<VarString>
+    public readonly struct VarString : IVariant, IEquatable<VarString>
     {
-        public int Size => Length.Size + _value.Length;
+        public int Size => _length.Size + _value.Length;
 
-        private VarInt Length => new VarInt(_value.Length);
+        private readonly VarInt _length;
         private readonly string _value;
 
+        public VarString(string value) { _value = value; _length = new VarInt(_value.Length); }
 
-        public VarString(string value) { _value = value; }
-
-
-        public byte[] Encode() => Encode(this);
-
+        public Span<byte> Encode() => Encode(in this);
 
         public override string ToString() => _value;
 
-        public static byte[] Encode(VarString value)
+        public static Span<byte> Encode(in VarString value)
         {
-            var lengthArray = value.Length.Encode();
-            var stringArray = Encoding.UTF8.GetBytes(value._value);
-            var result = new byte[lengthArray.Length + stringArray.Length];
+            Span<byte> lengthArray = value._length.Encode();
+            Span<byte> stringArray = Encoding.UTF8.GetBytes(value._value);
+            Span<byte> result = new byte[lengthArray.Length + stringArray.Length];
 
-            Array.Copy(lengthArray, 0, result, 0, lengthArray.Length);
-            Array.Copy(stringArray, 0, result, lengthArray.Length, stringArray.Length);
+            lengthArray.CopyTo(result.Slice(0, lengthArray.Length));
+            stringArray.CopyTo(result.Slice(lengthArray.Length, stringArray.Length));
 
             return result;
         }
-        public static int Encode(VarString value, byte[] buffer, int offset)
+        public static int Encode(in VarString value, in Span<byte> buffer)
         {
-            var encoded = value.Encode();
-            Array.Copy(encoded, 0, buffer, offset, encoded.Length);
+            Span<byte> encoded = Encode(in value);
+            encoded.CopyTo(buffer.Slice(0, encoded.Length));
             return encoded.Length;
         }
-        public static int Encode(VarString value, Stream stream)
+        public static int Encode(in VarString value, Stream stream)
         {
-            var encoded = value.Encode();
-            stream.Write(encoded, 0, encoded.Length);
+            Span<byte> encoded = Encode(in value);
+            stream.Write(encoded);
             return encoded.Length;
         }
 
         public static VarString Decode(in ReadOnlySpan<byte> buffer)
         {
             var stringDataLength = VarLong.Decode(in buffer);
-            var stringData = buffer.Slice(stringDataLength.Size).ToArray();
-            return new VarString(Encoding.UTF8.GetString(stringData, 0, stringData.Length)); // TODO
-        }
-        public static VarString Decode(byte[] buffer, int offset)
-        {
-            var length = VarLong.Decode(buffer, offset);
-            var stringArray = new byte[length];
-            Array.Copy(buffer, length.Size + offset, stringArray, 0, stringArray.Length);
-            return new VarString(Encoding.UTF8.GetString(stringArray, 0, stringArray.Length));
+            var stringData = buffer.Slice(stringDataLength.Size, stringDataLength);
+            return new VarString(Encoding.UTF8.GetString(stringData));
         }
         public static VarString Decode(Stream stream)
         {
-            var length = VarInt.Decode(stream);
-            var stringArray = new byte[length];
-            stream.Read(stringArray, 0, length);
-            return new VarString(Encoding.UTF8.GetString(stringArray, 0, stringArray.Length));
-        }
-        public static int Decode(byte[] buffer, int offset, out VarString result)
-        {
-            result = Decode(buffer, offset);
-            return result.Size;
+            var stringDataLength = VarInt.Decode(stream);
+            Span<byte> stringData = stackalloc byte[stringDataLength];
+            stream.Read(stringData);
+            return new VarString(Encoding.UTF8.GetString(stringData));
         }
         public static int Decode(Stream stream, out VarString result)
         {
